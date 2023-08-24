@@ -2,6 +2,11 @@ provider "aws" {
   region = "eu-west-1"
 }
 
+provider "aws" {
+  alias  = "useast1"
+  region = "us-east-1"
+}
+
 resource "aws_lambda_function" "rest_lambda_function" {
   filename      = "files/restLambda.zip" # Make sure the ZIP file contains your Python code and dependencies
   function_name = "VoLambdaFunction"
