@@ -140,21 +140,9 @@ data "aws_iam_policy_document" "lambda" {
       identifiers = ["*"]
     }
 
-    actions = ["execute-api:Invoke"]
-    resources = [
-      aws_api_gateway_rest_api.lambda_api.execution_arn,
-      "arn:aws:execute-api:eu-west-1:${local.account_id}:${aws_api_gateway_rest_api.lambda_api.id}/*/*/*",
-      "arn:aws:execute-api:eu-west-1:${local.account_id}:${aws_api_gateway_rest_api.lambda_api.id}/${aws_api_gateway_stage.test_stage.stage_name}/*/*",
-      "arn:aws:execute-api:eu-west-1:${local.account_id}:${aws_api_gateway_rest_api.lambda_api.id}/${aws_api_gateway_stage.test_stage.stage_name}/GET/${aws_api_gateway_resource.lambda_resource.path_part}/*",
-      "arn:aws:execute-api:eu-west-1:${local.account_id}:${aws_api_gateway_rest_api.lambda_api.id}/dev-deployment/GET/${aws_api_gateway_resource.lambda_resource.path_part}/*",
-      aws_api_gateway_deployment.lambda_deployment.execution_arn
-    ]
+    actions   = ["execute-api:Invoke"]
+    resources = ["arn:aws:execute-api:${var.zone_id}:${local.account_id}:${aws_api_gateway_rest_api.lambda_api.id}/*/*/*"]
 
-    # condition {
-    #   test     = "IpAddress"
-    #   variable = "aws:SourceIp"
-    #   values   = ["123.123.123.123/32"]
-    # }
   }
 }
 resource "aws_api_gateway_rest_api_policy" "lambda" {
@@ -168,7 +156,5 @@ resource "aws_lambda_permission" "apigw_lambda" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.rest_lambda_function.function_name
   principal     = "apigateway.amazonaws.com"
-
-  # More: http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-control-access-using-iam-policies-to-invoke-api.html
-  source_arn = "${aws_api_gateway_rest_api.lambda_api.execution_arn}/*"
+  source_arn    = "${aws_api_gateway_rest_api.lambda_api.execution_arn}/*"
 }

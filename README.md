@@ -1,12 +1,11 @@
-# Lambda Function for Retrieving Pre-signed URL for Latest File in S3 Bucket
+# AWS Lambda Function for REST API
 
-## Description
+This repository provides an example implementation of an AWS Lambda function that can be invoked via a REST API using AWS API Gateway. The Lambda function takes a query parameter and returns a response with an incremented value.
 
-The terraform code from this repo creates S3 bucket named "vo-lambda-bucket", AWS Role with attached policy to list and get objects from this bucket and a lambda function with the script written on Python to get a URL for the latest uploaded object.
+## Prerequisites
 
-The URL is valid 15 min after being created.
-
-## How to Deploy
+1. **AWS Account**: You'll need an active AWS account with enough permissions to deploy the resources in this repository.
+2. You need to have a **domain** hosted on AWS (in case your domain is hosted elsewhere, required changes should be done in code)
 
 ### Dependencies
 
@@ -14,7 +13,22 @@ The URL is valid 15 min after being created.
 
 - AWS CLI version 2 - https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html
 
+## How to Use
+
+**Clone the Repository**: Clone this repository to your local machine.
+
+```
+git clone https://github.com/drama17/restLambda.git
+```
+
 ### Authorization
+
+**Configure AWS CLI**: Make sure you have the AWS CLI installed and configured with your AWS credentials.
+
+```
+aws configure
+```
+**Or**
 
 ```
 export AWS_ACCESS_KEY_ID=YOUR_AWS_ACCESS_KEY
@@ -32,35 +46,43 @@ aws s3 ls
 ```
 ### Before Deploy
 
-Change "vo-lambda-bucket" bucket name with your bucket name in _lambda.tf_ and _lambdaS3.py_ (zip archive must be re-created).
-
-Optionally: change other resources names in _lambda.tf_
+Change/add proper values in *variables.tf* file (e.g. zone_id and domain_name).
 
 ### Deploy
 
-Assuming you are in the root of the repository run:
+Use Terraform to deploy the required AWS resources.
 
 ```
+cd restLambda
 terraform init
 terraform plan
 terraform apply
 ```
 
-## How to Test
+This will create the Lambda function, API Gateway, IAM roles, and other necessary resources.
 
-1. Go to the AWS Management Console and navigate to the Lambda service.
-2. Once deployed, you can test the Lambda function by configuring a test event with dummy data or invoking it directly from the Lambda console.
-3. The Lambda function should return a pre-signed URL for the latest file in the specified S3 bucket, which will be valid for 15 minutes.
-4. In case no objects are present in the bucket you will see the next message:
+**Access the API**: Once the deployment is complete, you can access the API using the provided Invoke URL. For example:
+
 ```
-Response
-{
-  "statusCode": 404,
-  "body": "No files found in the S3 bucket."
-}
+curl -X GET https://your-invoke-url/increase?i=10
+```
+(your-invoke-url - the DNS record which will be created for the API. The construction is the next: api.YOUR_DOMAIN)
+
+## Cleanup
+When you're done experimenting with this example, make sure to clean up the resources to avoid unnecessary costs.
+
+Run the following Terraform commands to destroy the infrastructure:
+
+```
+terraform destroy
+
 ```
 
 ## Possible improvements
 
 1. Additional bucket can be created for storing terraform state file
-2. Additional script could be written so developer/sales agents can run it locally with some extra parameters (e.g. bucket name) and get a URL for the latest object in the specified bucket without visiting AWS console (lambda function should be updated as well, or new functions could be created for different buckets)
+2. AWS Cognito could be integrated here for the additional security
+
+## Disclaimer
+
+This example is meant for educational purposes and might involve costs if not properly managed. Make sure to review the resources being created and understand the pricing associated with them.
